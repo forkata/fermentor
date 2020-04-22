@@ -43,6 +43,8 @@ void loop(){
     
     double temperatures[numberOfDevices] = { };
     
+    String values = String("{");
+
     // Loop through each device and build a payload of the data.
     for (int i = 0; i < numberOfDevices; i++) {
         // Search the wire for address
@@ -51,30 +53,43 @@ void loop(){
     		Serial.print("Temperature for device: ");
     		Serial.println(i, DEC);
 
-            float temp_temperature = dallas.getTempC(thermometerAddress);
+            float tempTemperature = dallas.getTempC(thermometerAddress);
+            int sensorNumber = i + 1;
 
-            if (temp_temperature != DEVICE_DISCONNECTED_C) {
-                temperatures[i]= temp_temperature;
-                 Serial.print("Temp C: ");
-                 Serial.print(temp_temperature);
-                 Serial.print(" Temp F: ");
-                 Serial.println(DallasTemperature::toFahrenheit(temp_temperature));
+            if (tempTemperature != DEVICE_DISCONNECTED_C) {
+                temperatures[i]= tempTemperature;
+                values = String::format(
+                    "%s \"temperature_%d\": %f, ",
+                    values.c_str(),
+                    sensorNumber,
+                    tempTemperature
+                );
+
+                String variableName = String("temperature" + sensorNumber);
+                Particle.variable(variableName, &temperatures[i], DOUBLE);
+
+                Serial.print("Temp C: ");
+                Serial.print(tempTemperature);
+                Serial.print(" Temp F: ");
+                Serial.println(DallasTemperature::toFahrenheit(tempTemperature));
             }
         }
     }
+
+    values = String::format(
+        "%s \"devices:\": %d }",
+        values.c_str(),
+        numberOfDevices
+    );
     
-    Particle.variable("temperature1", &temperatures[0], DOUBLE);
-    Particle.variable("temperature2", &temperatures[1], DOUBLE);
     Particle.variable("resolution", &resolution, INT);
     Particle.variable("devices", &numberOfDevices, INT);
     
     String data = String::format(
-        "{ \"tags\" : {\"id\": \"%s\", \"location\": \"%s\"}, \"values\": {\"temperature_1\": %f, \"temperature_2\": %f, \"devices:\": %d } }",
+        "{ \"tags\" : {\"id\": \"%s\", \"location\": \"%s\"}, \"values\": %s }",
         "t2",
         "fermentor 1",
-        temperatures[0],
-        temperatures[1],
-        numberOfDevices
+        values.c_str()
     );
     
     Particle.publish("temperature", data, PRIVATE);
