@@ -65,7 +65,7 @@ void loop(){
                     tempTemperature
                 );
 
-                String variableName = String("temperature" + sensorNumber);
+                String variableName = "temperature" + String(sensorNumber);
                 Particle.variable(variableName, &temperatures[i], DOUBLE);
 
                 Serial.print("Temp C: ");
