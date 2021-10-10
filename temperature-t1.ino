@@ -23,14 +23,14 @@ int numberOfDevices;
 
 void setup(){
     pinMode(led, OUTPUT);
-    
+
     resolution = 0;
     numberOfDevices = 0;
-    
+
     dallas.begin();
-    
+
     dallas.setResolution(DALLAS_RESOLUTION);
-    
+
     resolution = dallas.getResolution(thermometerAddress);
     numberOfDevices = dallas.getDeviceCount();
 }
@@ -38,11 +38,11 @@ void setup(){
 void loop(){
     // Turn LED On
     digitalWrite(led, HIGH);
-    
+
     dallas.requestTemperatures();
-    
+
     double temperatures[numberOfDevices] = { };
-    
+
     String values = String("{");
 
     // Loop through each device and build a payload of the data.
@@ -81,22 +81,22 @@ void loop(){
         values.c_str(),
         numberOfDevices
     );
-    
+
     Particle.variable("resolution", &resolution, INT);
     Particle.variable("devices", &numberOfDevices, INT);
-    
+
     String data = String::format(
         "{ \"tags\" : {\"id\": \"%s\", \"location\": \"%s\"}, \"values\": %s }",
         "t2",
         "fermentor 1",
         values.c_str()
     );
-    
+
     Particle.publish("temperature", data, PRIVATE);
-    
+
     // Turn the LED Off
     digitalWrite(led, LOW);
-    
+
     // Wait 60 sec before repeating
     delay(60000);
 }
