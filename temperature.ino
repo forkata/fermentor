@@ -41,7 +41,7 @@ void loop(){
 
   dallas.requestTemperatures();
 
-  double temperatures[numberOfDevices] = { };
+  double temperatures[numberOfDevices] = { 0.0 };
 
   String values = String("{");
 
