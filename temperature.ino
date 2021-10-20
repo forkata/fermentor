@@ -58,11 +58,13 @@ void loop(){
 
       if (tempTemperature != DEVICE_DISCONNECTED_C) {
         temperatures[i]= tempTemperature;
-        values = String::format(
-          "%s \"temperature_%d\": %f, ",
-          values.c_str(),
-          sensorNumber,
-          tempTemperature
+
+        values.concat(
+          String::format(
+            " \"temperature_%d\": %f, ",
+            sensorNumber,
+            tempTemperature
+          )
         );
 
         String variableName = "temperature" + String(sensorNumber);
@@ -76,10 +78,8 @@ void loop(){
     }
   }
 
-  values = String::format(
-    "%s \"devices:\": %d }",
-    values.c_str(),
-    numberOfDevices
+  values.concat(
+    String::format("\"devices:\": %d }", numberOfDevices)
   );
 
   Particle.variable("resolution", &resolution, INT);
