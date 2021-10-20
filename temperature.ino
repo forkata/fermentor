@@ -14,9 +14,7 @@ int temperatureSensor = D6;
 int led = D7;
 
 DallasTemperature dallas(new OneWire(temperatureSensor));
-DeviceAddress thermometerAddress;
 
-int resolution;
 int numberOfDevices;
 
 #define DALLAS_RESOLUTION 12
@@ -24,14 +22,12 @@ int numberOfDevices;
 void setup(){
   pinMode(led, OUTPUT);
 
-  resolution = 0;
   numberOfDevices = 0;
 
   dallas.begin();
 
   dallas.setResolution(DALLAS_RESOLUTION);
 
-  resolution = dallas.getResolution(thermometerAddress);
   numberOfDevices = dallas.getDeviceCount();
 }
 
@@ -48,13 +44,19 @@ void loop(){
   // Loop through each device and build a payload of the data.
   for (int i = 0; i < numberOfDevices; i++) {
     // Search the wire for address
+    DeviceAddress thermometerAddress;
     if (dallas.getAddress(thermometerAddress, i)){
+      int resolution = dallas.getResolution(thermometerAddress);
+      int sensorNumber = i + 1;
+
+      String resolutionVar = "resolution" + String(sensorNumber);
+      Particle.variable(resolutionVar, &resolution, INT);
+
       // Output the device ID
       Serial.print("Temperature for device: ");
       Serial.println(i, DEC);
 
-      float tempTemperature = dallas.getTempC(thermometerAddress);
-      int sensorNumber = i + 1;
+      double tempTemperature = dallas.getTempC(thermometerAddress);
 
       if (tempTemperature != DEVICE_DISCONNECTED_C) {
         temperatures[i]= tempTemperature;
@@ -67,8 +69,8 @@ void loop(){
           )
         );
 
-        String variableName = "temperature" + String(sensorNumber);
-        Particle.variable(variableName, &temperatures[i], DOUBLE);
+        String temperatureVar = "temperature" + String(sensorNumber);
+        Particle.variable(temperatureVar, &temperatures[i], DOUBLE);
 
         Serial.print("Temp C: ");
         Serial.print(tempTemperature);
@@ -82,7 +84,6 @@ void loop(){
     String::format("\"devices:\": %d }", numberOfDevices)
   );
 
-  Particle.variable("resolution", &resolution, INT);
   Particle.variable("devices", &numberOfDevices, INT);
 
   String data = String::format(
