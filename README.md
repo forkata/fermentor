@@ -12,6 +12,7 @@ data to the Particle cloud in the following format
   "tags" : {
     "id": "t1",
     "location": "fermentor 1"
+    "firmware": "0.0.1"
   },
   "values": {
     "temperature_1": 18.750000,

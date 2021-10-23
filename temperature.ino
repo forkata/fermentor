@@ -4,6 +4,8 @@
 // This #include statement was automatically added by the Particle IDE.
 #include <OneWire.h>
 
+#include "version.h"
+
 #include <sstream>
 #include <cstring>
 
@@ -91,9 +93,10 @@ void loop(){
   Particle.variable("devices", &numberOfDevices, INT);
 
   String data = String::format(
-    "{ \"tags\" : {\"id\": \"%s\", \"location\": \"%s\"}, \"values\": %s }",
+    "{ \"tags\" : {\"id\": \"%s\", \"location\": \"%s\", \"firmware\": \"%s\"}, \"values\": %s }",
     "t2",
     "fermentor 1",
+    FIRMWARE_VERSION,
     values.c_str()
   );
 
