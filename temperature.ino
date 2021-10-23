@@ -7,20 +7,24 @@
 #include <sstream>
 #include <cstring>
 
-// Init Dallas on pin 6
-int temperatureSensor = D6;
+// Init Dallas one-wire temperature sensors on pin 6.
+const int TEMPERATURE_SENSOR_PIN = D6;
 
-// The on-board LED is on pin 7
-int led = D7;
+// The on-board LED is on pin 7.
+const int LED_PIN = D7;
 
-DallasTemperature dallas(new OneWire(temperatureSensor));
+const int DALLAS_RESOLUTION = 12;
 
+// Wait 60 sec between loop itterations.
+const int LOOP_DELAY = 60000;
+
+DallasTemperature dallas(new OneWire(TEMPERATURE_SENSOR_PIN));
+
+// The number of temperature sensors detected on the one-wire pin.
 int numberOfDevices;
 
-#define DALLAS_RESOLUTION 12
-
 void setup(){
-  pinMode(led, OUTPUT);
+  pinMode(LED_PIN, OUTPUT);
 
   numberOfDevices = 0;
 
@@ -33,7 +37,7 @@ void setup(){
 
 void loop(){
   // Turn LED On
-  digitalWrite(led, HIGH);
+  digitalWrite(LED_PIN, HIGH);
 
   dallas.requestTemperatures();
 
@@ -96,8 +100,7 @@ void loop(){
   Particle.publish("temperature", data, PRIVATE);
 
   // Turn the LED Off
-  digitalWrite(led, LOW);
+  digitalWrite(LED_PIN, LOW);
 
-  // Wait 60 sec before repeating
-  delay(60000);
+  delay(LOOP_DELAY);
 }
