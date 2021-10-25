@@ -22,4 +22,5 @@ data to the Particle cloud in the following format
 }
 ```
 
-Firmaware version 0.0.1
+If you are interested in what's new you can find more information in the
+[changelog](CHANGELOG.md).
