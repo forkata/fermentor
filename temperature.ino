@@ -17,24 +17,32 @@ const int LED_PIN = D7;
 
 const int DALLAS_RESOLUTION = 12;
 
+// This determines how much space we allocate ahead of time
+// for storing temperature readings.
+const int MAX_NUMBER_OF_SENSORS = 8;
+
 // Wait 60 sec between loop itterations.
 const int LOOP_DELAY = 60000;
 
 DallasTemperature dallas(new OneWire(TEMPERATURE_SENSOR_PIN));
 
 // The number of temperature sensors detected on the one-wire pin.
-int numberOfDevices;
+int numberOfDevices = 0;
+
+// Allocates the array where we store current temperature readings.
+double temperatures[MAX_NUMBER_OF_SENSORS] = { 0.0 };
 
 void setup(){
   pinMode(LED_PIN, OUTPUT);
-
-  numberOfDevices = 0;
 
   dallas.begin();
 
   dallas.setResolution(DALLAS_RESOLUTION);
 
+  // Get the actual number of connected devices.
   numberOfDevices = dallas.getDeviceCount();
+
+  setupParticleVariables(&numberOfDevices, temperatures);
 }
 
 void loop(){
@@ -43,8 +51,6 @@ void loop(){
 
   dallas.requestTemperatures();
 
-  double temperatures[numberOfDevices] = { 0.0 };
-
   String values = String("{");
 
   // Loop through each device and build a payload of the data.
@@ -52,11 +58,7 @@ void loop(){
     // Search the wire for address
     DeviceAddress thermometerAddress;
     if (dallas.getAddress(thermometerAddress, i)){
-      int resolution = dallas.getResolution(thermometerAddress);
       int sensorNumber = i + 1;
-
-      String resolutionVar = "resolution" + String(sensorNumber);
-      Particle.variable(resolutionVar, &resolution, INT);
 
       // Output the device ID
       Serial.print("Temperature for device: ");
@@ -75,9 +77,6 @@ void loop(){
           )
         );
 
-        String temperatureVar = "temperature" + String(sensorNumber);
-        Particle.variable(temperatureVar, &temperatures[i], DOUBLE);
-
         Serial.print("Temp C: ");
         Serial.print(tempTemperature);
         Serial.print(" Temp F: ");
@@ -89,8 +88,6 @@ void loop(){
   values.concat(
     String::format("\"devices:\": %d }", numberOfDevices)
   );
-
-  Particle.variable("devices", &numberOfDevices, INT);
 
   String data = String::format(
     "{ \"tags\" : {\"id\": \"%s\", \"location\": \"%s\", \"firmware\": \"%s\"}, \"values\": %s }",
@@ -106,4 +103,15 @@ void loop(){
   digitalWrite(LED_PIN, LOW);
 
   delay(LOOP_DELAY);
+}
+
+void setupParticleVariables(int *numberOfDevices, double *temperatures) {
+  Particle.variable("devices", numberOfDevices, INT);
+
+  for (int i = 0; i < *numberOfDevices; i++) {
+    int sensorNumber = i + 1;
+
+    String temperatureVar = "temperature" + String(sensorNumber);
+    Particle.variable(temperatureVar, &temperatures[i], DOUBLE);
+  }
 }
